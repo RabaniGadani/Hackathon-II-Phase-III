@@ -26,8 +26,23 @@ class Settings(BaseSettings):
     # API settings
     api_v1_prefix: str = "/api"
 
+    # AI Provider settings (openai or gemini)
+    ai_provider: str = os.getenv("AI_PROVIDER", "gemini")  # Default to gemini
+
+    # OpenAI settings for AI Chatbot
+    openai_api_key: Optional[str] = os.getenv("OPENAI_API_KEY")
+    openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    # Gemini settings for AI Chatbot
+    gemini_api_key: Optional[str] = os.getenv("GEMINI_API_KEY")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
+    # Agent settings
+    agent_max_turns: int = int(os.getenv("AGENT_MAX_TURNS", "10"))
+
     class Config:
         env_file = ".env"
+        extra = "ignore"  # Ignore extra environment variables
 
 
 # Create a single instance of settings

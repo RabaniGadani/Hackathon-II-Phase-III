@@ -23,7 +23,7 @@ const Header = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-indigo-600">Todo App</span>
+              <span className="text-xl font-bold text-green-600">Todo App</span>
             </Link>
             <nav className="ml-6 flex space-x-4">
               {navLinks.map((link) => (
@@ -32,7 +32,7 @@ const Header = () => {
                   href={link.path}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     pathname === link.path
-                      ? 'bg-indigo-100 text-indigo-700'
+                      ? 'bg-green-100 text-green-700'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
@@ -46,22 +46,22 @@ const Header = () => {
             {/* User profile dropdown or login/logout buttons */}
             {isAuthenticated ? (
               <div className="ml-4 flex items-center space-x-4">
-                <button className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium">
+                <button className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">
                   Profile
                 </button>
                 <button
                   onClick={logout}
-                  className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium"
+                  className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium"
                 >
                   Logout
                 </button>
               </div>
             ) : (
               <div className="ml-4 flex items-center space-x-4">
-                <Link href="/login" className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium">
+                <Link href="/login" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">
                   Login
                 </Link>
-                <Link href="/signup" className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium">
+                <Link href="/signup" className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium">
                   Sign Up
                 </Link>
               </div>

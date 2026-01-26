@@ -5,6 +5,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import TaskList from '../../components/TaskList';
 import TaskForm from '../../components/TaskForm';
 import { Task, FilterOptions, TaskFormData } from '../../types';
@@ -12,11 +13,19 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTasks } from '../../hooks/useTasks';
 
 const TasksPage = () => {
-  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { tasks, loading, error, fetchTasks, createTask, updateTask, deleteTask, toggleTaskCompletion } = useTasks();
   const [showForm, setShowForm] = useState<boolean>(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   // Load tasks on component mount and when user changes
   useEffect(() => {
@@ -78,17 +87,23 @@ const TasksPage = () => {
     setFilterOptions(options);
   };
 
-  if (loading && tasks.length === 0) {
+  // Show loading while checking auth or loading tasks
+  if (authLoading || (loading && tasks.length === 0)) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-8 mt-10 mx-4 md:mx-0">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">My Tasks</h1>
         <p className="text-gray-600">Manage your daily tasks and boost your productivity</p>
       </div>
@@ -107,7 +122,7 @@ const TasksPage = () => {
                 <h2 className="text-xl font-semibold text-gray-900">Task List</h2>
                 <button
                   onClick={() => setShowForm(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
                 >
                   <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -138,7 +153,7 @@ const TasksPage = () => {
                 <select
                   value={filterOptions.status || 'all'}
                   onChange={(e) => handleFilterChange({ ...filterOptions, status: e.target.value as 'all' | 'pending' | 'completed' })}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
                 >
                   <option value="all">All Tasks</option>
                   <option value="pending">Pending</option>
@@ -151,7 +166,7 @@ const TasksPage = () => {
                 <select
                   value={filterOptions.sort || ''}
                   onChange={(e) => handleFilterChange({ ...filterOptions, sort: e.target.value as 'date' | 'title' })}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
                 >
                   <option value="">Default</option>
                   <option value="date">Date</option>
@@ -164,7 +179,7 @@ const TasksPage = () => {
                 <select
                   value={filterOptions.order || 'asc'}
                   onChange={(e) => handleFilterChange({ ...filterOptions, order: e.target.value as 'asc' | 'desc' })}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
                 >
                   <option value="asc">Ascending</option>
                   <option value="desc">Descending</option>

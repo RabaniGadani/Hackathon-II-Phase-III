@@ -35,6 +35,33 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggleStatus, onDelete, onE
     return date.toLocaleDateString();
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'done': return 'bg-green-100 text-green-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'todo': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'done': return 'Done';
+      case 'in_progress': return 'In Progress';
+      case 'todo': return 'To Do';
+      default: return status;
+    }
+  };
+
   return (
     <div className={`bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-200 hover:shadow-md hover:border-gray-300 ${
       task.completed ? 'bg-gray-50' : 'bg-white'
@@ -42,12 +69,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggleStatus, onDelete, onE
       <div className="p-5">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center mb-3">
+            <div className="flex items-center mb-2">
               <input
                 type="checkbox"
                 checked={task.completed}
                 onChange={handleToggleStatus}
-                className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-3 cursor-pointer"
+                className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded mr-3 cursor-pointer"
               />
               <h3 className={`text-lg font-semibold ${
                 task.completed ? 'line-through text-gray-500' : 'text-gray-900'
@@ -56,26 +83,54 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggleStatus, onDelete, onE
               </h3>
             </div>
 
+            <div className="flex flex-wrap gap-2 mb-3 ml-8">
+              {task.priority && (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                  {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                </span>
+              )}
+              {task.status && (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
+                  {getStatusLabel(task.status)}
+                </span>
+              )}
+              {task.category && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  {task.category}
+                </span>
+              )}
+            </div>
+
             {task.description && (
-              <p className={`text-sm mb-3 ${
+              <p className={`text-sm mb-3 ml-8 ${
                 task.completed ? 'text-gray-500' : 'text-gray-600'
               }`}>
                 {task.description}
               </p>
             )}
 
-            <div className="flex items-center text-xs text-gray-500">
-              <svg className="flex-shrink-0 mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-              </svg>
-              <span>{formatDate(task.created_at)}</span>
+            <div className="flex items-center gap-4 text-xs text-gray-500 ml-8">
+              <div className="flex items-center">
+                <svg className="flex-shrink-0 mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                </svg>
+                <span>Created: {formatDate(task.created_at)}</span>
+              </div>
+              {task.due_date && (
+                <div className="flex items-center">
+                  <svg className="flex-shrink-0 mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                  </svg>
+                  <span>Due: {formatDate(task.due_date)}</span>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="ml-4 flex-shrink-0 flex space-x-2">
             <button
               onClick={() => onEdit(task)}
-              className="inline-flex items-center p-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              className="inline-flex items-center p-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
               title="Edit task"
             >
               <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
