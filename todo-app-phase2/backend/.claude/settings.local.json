@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run:*)",
+      "Bash(curl:*)",
+      "Bash(uv add:*)",
+      "Bash(docker build:*)",
+      "Bash(docker context:*)",
+      "Bash(docker info:*)",
+      "Bash(uv lock:*)"
+    ]
+  }
+}

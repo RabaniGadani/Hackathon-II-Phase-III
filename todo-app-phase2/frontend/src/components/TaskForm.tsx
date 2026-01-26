@@ -3,7 +3,7 @@
  * Provides a form for adding and editing tasks in a modern modal
  */
 import React, { useState } from 'react';
-import { TaskFormData } from '../types';
+import { TaskFormData, Priority, TaskStatus } from '../types';
 
 interface TaskFormProps {
   task?: TaskFormData;
@@ -15,7 +15,11 @@ interface TaskFormProps {
 const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, isEditing = false }) => {
   const [formData, setFormData] = useState<TaskFormData>({
     title: task?.title || '',
-    description: task?.description || ''
+    description: task?.description || '',
+    priority: task?.priority || 'medium',
+    status: task?.status || 'todo',
+    due_date: task?.due_date || '',
+    category: task?.category || ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -40,7 +44,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, isEditing
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -80,7 +84,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, isEditing
             <button
               onClick={onCancel}
               disabled={isSubmitting}
-              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full p-1 transition-colors duration-200"
+              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-full p-1 transition-colors duration-200"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -99,7 +103,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, isEditing
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 ${
+                className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 ${
                   errors.title ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter task title"
@@ -117,13 +121,80 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, isEditing
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows={4}
-                className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 ${
+                rows={3}
+                className={`w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter task description"
               />
               {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+                  Priority
+                </label>
+                <select
+                  id="priority"
+                  name="priority"
+                  value={formData.priority}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                >
+                  <option value="todo">To Do</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Due Date
+                </label>
+                <input
+                  type="date"
+                  id="due_date"
+                  name="due_date"
+                  value={formData.due_date}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <input
+                  type="text"
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+                  placeholder="e.g., Work, Personal"
+                />
+              </div>
             </div>
 
             <div className="flex justify-end space-x-3 pt-4">
@@ -138,7 +209,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, isEditing
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors duration-200"
+                className="px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-colors duration-200"
               >
                 {isSubmitting ? (
                   <span className="flex items-center">
