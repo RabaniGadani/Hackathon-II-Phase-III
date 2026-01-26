@@ -28,7 +28,7 @@ interface RegisterResponse {
 }
 
 interface SessionData {
-  user: User | null;
+  data: { user: User | null } | null;
   isLoading: boolean;
 }
 

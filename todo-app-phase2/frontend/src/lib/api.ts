@@ -3,21 +3,7 @@
  * Handles all API calls with proper authentication and error handling
  */
 
-export interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  status: number;
-}
-
-export interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  completed: boolean;
-  created_at: string;
-  updated_at: string;
-  user_id: number;  // Changed from owner_id to user_id to match backend
-}
+import { ApiResponse, Task } from '../types';
 
 export interface TaskCreateRequest {
   title: string;
@@ -113,7 +99,7 @@ class ApiClient {
   }
 
   // Task methods - Updated to call backend API directly
-  async getTasks(userId: number, status?: string, sort?: 'date' | 'title', order?: 'asc' | 'desc'): Promise<ApiResponse<Task[]>> {
+  async getTasks(userId: number, status?: string, sort?: 'date' | 'title' | 'priority' | 'due_date', order?: 'asc' | 'desc'): Promise<ApiResponse<Task[]>> {
     const params = new URLSearchParams();
     if (status && status !== 'all') params.append('status', status);
     if (sort) params.append('sort', sort);
