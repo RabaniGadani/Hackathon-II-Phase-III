@@ -9,10 +9,16 @@ load_dotenv()
 from ..models import SQLModel  # Import the SQLModel from models module
 
 # Get database URL from environment variable
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/todo_app")
+# Default to SQLite for local/Vercel dev; set DATABASE_URL for production PostgreSQL
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./todo_app.db")
+
+# SQLite needs connect_args for thread safety
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args["check_same_thread"] = False
 
 # Create engine
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, echo=True, connect_args=connect_args)
 
 
 def create_db_and_tables():

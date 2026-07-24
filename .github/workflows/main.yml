@@ -2,7 +2,7 @@ name: Deploy to Hugging Face
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -23,12 +23,13 @@ jobs:
 
         git clone https://huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME hf
 
-        cp main.py hf/
-        cp pyproject.toml hf/
-        cp uv.lock hf/
-        cp Dockerfile hf/
+        # Copy backend files for HF Space deployment
+        cp todo-app-phase2/backend/main.py hf/
+        cp todo-app-phase2/backend/pyproject.toml hf/
+        cp todo-app-phase2/backend/Dockerfile hf/
+        cp todo-app-phase2/backend/requirements.txt hf/
 
         cd hf
         git add .
-        git commit -m "Deploy" || echo "No changes"
+        git commit -m "Deploy: $(date)" || echo "No changes"
         git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME main
