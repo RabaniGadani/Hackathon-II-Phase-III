@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # API settings
     api_v1_prefix: str = "/api"
 
-    # AI Provider settings (openai or gemini)
+    # AI Provider settings (openai, gemini, or deepseek)
     ai_provider: str = os.getenv("AI_PROVIDER", "gemini")  # Default to gemini
 
     # OpenAI settings for AI Chatbot
@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     # Gemini settings for AI Chatbot
     gemini_api_key: Optional[str] = os.getenv("GEMINI_API_KEY")
     gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+
+    # DeepSeek settings for AI Chatbot
+    deepseek_api_key: Optional[str] = os.getenv("DEEPSEEK_API_KEY")
+    deepseek_model: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+    deepseek_base_url: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 
     # Agent settings
     agent_max_turns: int = int(os.getenv("AGENT_MAX_TURNS", "10"))

@@ -233,7 +233,7 @@ class ChatService:
     ) -> Dict[str, Any]:
         """
         Run the AI agent with the given context.
-        Supports both OpenAI and Gemini providers based on AI_PROVIDER setting.
+        Supports OpenAI, Gemini, and DeepSeek providers based on AI_PROVIDER setting.
 
         Args:
             user_id: User ID for tool authorization
@@ -249,6 +249,8 @@ class ChatService:
 
         if provider == "gemini":
             return ChatService._run_gemini_agent(user_id, messages)
+        elif provider == "deepseek":
+            return ChatService._run_deepseek_agent(user_id, messages)
         else:
             return ChatService._run_openai_agent(user_id, messages)
 
@@ -359,6 +361,71 @@ class ChatService:
                 raise AgentExecutionError(f"Agent execution failed: {str(e)}")
 
     @staticmethod
+    def _run_deepseek_agent(
+        user_id: int,
+        messages: List[Dict[str, str]]
+    ) -> Dict[str, Any]:
+        """Run the DeepSeek-based agent (OpenAI-compatible API)."""
+        if not settings.deepseek_api_key:
+            raise AgentExecutionError("DeepSeek API key not configured. Set DEEPSEEK_API_KEY in your .env file.")
+
+        from openai import OpenAI
+
+        try:
+            client = OpenAI(
+                api_key=settings.deepseek_api_key,
+                base_url=settings.deepseek_base_url
+            )
+
+            # Build messages with system instruction
+            system_msg = {
+                "role": "system",
+                "content": (
+                    "You are a helpful AI assistant integrated into a Todo application. "
+                    "You can manage tasks: create, read, update, delete, list, and search tasks. "
+                    "Keep responses concise and helpful. "
+                    f"Current user ID: {user_id}"
+                )
+            }
+
+            api_messages = [system_msg] + [
+                {"role": m["role"], "content": m["content"]}
+                for m in messages
+            ]
+
+            response = client.chat.completions.create(
+                model=settings.deepseek_model,
+                messages=api_messages,
+                temperature=0.7,
+                max_tokens=4096
+            )
+
+            response_text = response.choices[0].message.content or ""
+
+            return {
+                "response": response_text,
+                "tool_calls": [],
+                "token_count": response.usage.total_tokens if response.usage else None
+            }
+
+        except Exception as e:
+            error_str = str(e).lower()
+            log_error(e, f"ChatService._run_deepseek_agent (user_id={user_id})", user_id)
+
+            if "rate limit" in error_str or "429" in error_str:
+                raise AgentExecutionError("DeepSeek API rate limit exceeded. Please wait a moment and try again.")
+            elif "invalid api key" in error_str or "authentication" in error_str or "401" in error_str:
+                raise AgentExecutionError("DeepSeek API authentication failed. Please check your API key.")
+            elif "insufficient balance" in error_str or "quota" in error_str or "402" in error_str:
+                raise AgentExecutionError("DeepSeek API quota/balance exceeded. Please top up your account.")
+            elif "model" in error_str and ("not found" in error_str or "404" in error_str):
+                raise AgentExecutionError(f"DeepSeek model '{settings.deepseek_model}' not available.")
+            elif "server error" in error_str or "500" in error_str or "502" in error_str or "503" in error_str:
+                raise AgentExecutionError("DeepSeek service is temporarily unavailable. Please try again later.")
+            else:
+                raise AgentExecutionError(f"DeepSeek agent execution failed: {str(e)}")
+
+    @staticmethod
     async def stream_agent_response(
         user_id: int,
         messages: List[Dict[str, str]]
@@ -382,6 +449,9 @@ class ChatService:
 
         if provider == "gemini":
             async for event in ChatService._stream_gemini_agent(user_id, messages):
+                yield event
+        elif provider == "deepseek":
+            async for event in ChatService._stream_deepseek_agent(user_id, messages):
                 yield event
         else:
             async for event in ChatService._stream_openai_agent(user_id, messages):
@@ -572,6 +642,68 @@ class ChatService:
                 yield {"type": "error", "message": "API authentication failed"}
             else:
                 yield {"type": "error", "message": f"Agent error: {str(e)}"}
+
+    @staticmethod
+    async def _stream_deepseek_agent(
+        user_id: int,
+        messages: List[Dict[str, str]]
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """Stream responses from DeepSeek agent (OpenAI-compatible API)."""
+        if not settings.deepseek_api_key:
+            yield {"type": "error", "message": "DeepSeek API key not configured"}
+            return
+
+        from openai import OpenAI
+
+        try:
+            client = OpenAI(
+                api_key=settings.deepseek_api_key,
+                base_url=settings.deepseek_base_url
+            )
+
+            # Build messages with system instruction
+            system_msg = {
+                "role": "system",
+                "content": (
+                    "You are a helpful AI assistant integrated into a Todo application. "
+                    "You can manage tasks: create, read, update, delete, list, and search tasks. "
+                    "Keep responses concise and helpful. "
+                    f"Current user ID: {user_id}"
+                )
+            }
+
+            api_messages = [system_msg] + [
+                {"role": m["role"], "content": m["content"]}
+                for m in messages
+            ]
+
+            # Stream the response
+            stream = client.chat.completions.create(
+                model=settings.deepseek_model,
+                messages=api_messages,
+                temperature=0.7,
+                max_tokens=4096,
+                stream=True
+            )
+
+            for chunk in stream:
+                if chunk.choices and len(chunk.choices) > 0:
+                    delta = chunk.choices[0].delta
+                    if delta and delta.content:
+                        yield {"type": "chunk", "content": delta.content}
+
+        except Exception as e:
+            error_str = str(e).lower()
+            log_error(e, f"ChatService._stream_deepseek_agent (user_id={user_id})", user_id)
+
+            if "rate limit" in error_str or "429" in error_str:
+                yield {"type": "error", "message": "DeepSeek rate limit exceeded"}
+            elif "invalid api key" in error_str or "authentication" in error_str or "401" in error_str:
+                yield {"type": "error", "message": "DeepSeek API authentication failed"}
+            elif "insufficient balance" in error_str or "quota" in error_str:
+                yield {"type": "error", "message": "DeepSeek API balance/ quota exceeded"}
+            else:
+                yield {"type": "error", "message": f"DeepSeek agent error: {str(e)}"}
 
     @staticmethod
     def get_conversation_history(
